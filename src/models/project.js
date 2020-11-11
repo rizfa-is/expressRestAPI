@@ -1,27 +1,37 @@
 const db = require('../helpers/db')
 
 module.exports = {
-  getALlProjectModul: () => {
-    db.query('SELECT * FROM project', (err, result, _fields, callback) => {
+  getAllProjectModul: (searchKey, searchValue, limit, offset, callback) => {
+    db.query(`SELECT * FROM project WHERE ${searchKey} LIKE '%${searchValue}%' LIMIT ${limit} OFFSET ${offset}`, (err, result, _fields) => {
       if (!err) {
-        if (result.length) {
-          res.status(200).send({
-            success: true,
-            message: 'Project List',
-            data: result
+        callback(result)
+      } else {
+        callback(err)
+      }
+    })
+  },
+  deleteProjectModul: (projectId, res) => {
+    return new Promise((resolve, reject) => {
+      db.query(`SELECT * FROM project WHERE project_id = ${projectId}`, (err, result, _fields) => {
+        if (!err) {
+          resolve(result)
+          db.query(`DELETE FROM project WHERE project_id = ${projectId}`, (_err, result, _fields) => {
+            if (result.affectedRows) {
+              res.status(200).send({
+                success: true,
+                message: `Item project id ${projectId} has been deleted!`
+              })
+            } else {
+              res.status(404).send({
+                success: false,
+                message: 'Item project failed to delete!'
+              })
+            }
           })
         } else {
-          res.status(404).send({
-            success: false,
-            message: 'Item project not found!'
-          })
+          reject(new Error(err))
         }
-      } else {
-        res.status(500).send({
-          success: false,
-          message: 'Internal Server Error!'
-        })
-      }
+      })
     })
   }
 }
