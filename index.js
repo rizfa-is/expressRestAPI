@@ -64,31 +64,31 @@ app.get('/', (_req, res) => {
 //   })
 // })
 
-// app.post('/project', (req, res) => {
-//   const { projectName, projectDesc, projectType } = req.body
+app.post('/project', (req, res) => {
+  const { projectName, projectDesc, projectType } = req.body
 
-//   db.query(`INSERT INTO project (projectName, projectDesc, projectType)
-//   VALUES ('${projectName}', '${projectDesc}', '${projectType}')`, (err, result, _fields) => {
-//     if (!err) {
-//       if (result.affectedRows) {
-//         res.status(200).send({
-//           success: true,
-//           message: 'Success add project!'
-//         })
-//       } else {
-//         res.status(404).send({
-//           success: false,
-//           message: 'Item project not found!'
-//         })
-//       }
-//     } else {
-//       res.status(500).send({
-//         success: false,
-//         message: 'Internal Server Error!'
-//       })
-//     }
-//   })
-// })
+  db.query(`INSERT INTO project (projectName, projectDesc, projectType)
+  VALUES ('${projectName}', '${projectDesc}', '${projectType}')`, (err, result, _fields) => {
+    if (!err) {
+      if (result.affectedRows) {
+        res.status(200).send({
+          success: true,
+          message: 'Success add project!'
+        })
+      } else {
+        res.status(404).send({
+          success: false,
+          message: 'Item project not found!'
+        })
+      }
+    } else {
+      res.status(500).send({
+        success: false,
+        message: 'Internal Server Error!'
+      })
+    }
+  })
+})
 
 // app.delete('/project/:projectId', (req, res) => {
 //   const { projectId } = req.params

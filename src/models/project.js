@@ -2,7 +2,7 @@ const db = require('../helpers/db')
 
 module.exports = {
   getAllProjectModul: (searchKey, searchValue, limit, offset, callback) => {
-    db.query(`SELECT * FROM project WHERE ${searchKey} LIKE '%${searchValue}%' LIMIT ${limit} OFFSET ${offset}`, (err, result, _fields) => {
+    db.query(`SELECT * FROM project WHERE ${searchKey} LIKE '%${searchValue}%' LIMIT ${limit} OFFSET ${offset}`, (err, result, fields) => {
       if (!err) {
         callback(result)
       } else {
@@ -10,22 +10,16 @@ module.exports = {
       }
     })
   },
-  deleteProjectModul: (projectId, res) => {
+  deleteProjectModul: (projectId, callback) => {
     return new Promise((resolve, reject) => {
       db.query(`SELECT * FROM project WHERE project_id = ${projectId}`, (err, result, _fields) => {
         if (!err) {
           resolve(result)
-          db.query(`DELETE FROM project WHERE project_id = ${projectId}`, (_err, result, _fields) => {
-            if (result.affectedRows) {
-              res.status(200).send({
-                success: true,
-                message: `Item project id ${projectId} has been deleted!`
-              })
+          db.query(`DELETE FROM project WHERE project_id = ${projectId}`, (err, result, _fields) => {
+            if (!err) {
+              callback(result)
             } else {
-              res.status(404).send({
-                success: false,
-                message: 'Item project failed to delete!'
-              })
+              callback(err)
             }
           })
         } else {

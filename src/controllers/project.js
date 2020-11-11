@@ -47,12 +47,22 @@ module.exports = {
     try {
       const { projectId } = req.params
 
-      const result = await deleteProjectModul(projectId, res)
+      const result = await deleteProjectModul(projectId, result => {
+        if (result.affectedRows) {
+          res.status(200).send({
+            success: true,
+            message: `Item project id ${projectId} has been deleted!`
+          })
+        } else {
+          res.status(404).send({
+            success: false,
+            message: 'Item project failed to delete!'
+          })
+        }
+      })
+
       if (result.length) {
-        res.status(200).send({
-          success: true,
-          message: `Item project id ${projectId} has been deleted!`
-        })
+        // passed
       } else {
         res.status(404).send({
           success: false,
@@ -60,7 +70,7 @@ module.exports = {
         })
       }
     } catch (error) {
-      res.status(500).send({
+      res.status(400).send({
         success: false,
         message: 'Data project not found'
       })
