@@ -1,19 +1,47 @@
 const express = require('express')
 const db = require('./src/helpers/db')
 const bodyParser = require('body-parser')
-require('dotenv').config()
 const app = express()
 const port = process.env.PORT
+const projectRouter = require('./src/routers/project')
+require('dotenv').config()
 
 // Middleware
 app.use(bodyParser.urlencoded({ extended: false }))
+// app.use('/project', projectRouter)
 
 app.get('/', (_req, res) => {
   res.send('Backend Android2!')
 })
 
-app.get('/project', (_req, res) => {
-  db.query('SELECT * FROM project', (err, result, _fields) => {
+app.get('/project', (req, res) => {
+  let { search, limit, page } = req.query
+  let searchKey = ''
+  let searchValue = ''
+
+  if (typeof search === 'object') {
+    searchKey = Object.keys(search)[0]
+    searchValue = Object.values(search)[0]
+  } else {
+    searchKey = 'projectName'
+    searchValue = search || ''
+  }
+
+  if (!limit) {
+    limit = 50
+  } else {
+    limit = parseInt(limit)
+  }
+
+  if (!page) {
+    page = 1
+  } else {
+    page = parseInt(page)
+  }
+
+  const offset = (page - 1) * limit
+
+  db.query(`SELECT * FROM project WHERE ${searchKey} LIKE '%${searchValue}%' LIMIT ${limit} OFFSET ${offset}`, (err, result, _fields) => {
     if (!err) {
       if (result.length) {
         res.status(200).send({
@@ -39,7 +67,7 @@ app.get('/project', (_req, res) => {
 app.post('/project', (req, res) => {
   const { projectName, projectDesc, projectType } = req.body
 
-  db.query(`INSERT INTO project (projectName, projectDesc, projectType) 
+  db.query(`INSERT INTO project (projectName, projectDesc, projectType)
   VALUES ('${projectName}', '${projectDesc}', '${projectType}')`, (err, result, _fields) => {
     if (!err) {
       if (result.affectedRows) {
