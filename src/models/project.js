@@ -1,13 +1,20 @@
 const db = require('../helpers/db')
+const tableNAme = 'project'
+const tableSchema = 'gohire_androidapp'
+db.query(`SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = N'${tableNAme}' && TABLE_SCHEMA = N'${tableSchema}'`, (_err, result, fields) => {
+  console.log(result)
+})
 
 module.exports = {
-  getAllProjectModul: (searchKey, searchValue, limit, offset, callback) => {
-    db.query(`SELECT * FROM project WHERE ${searchKey} LIKE '%${searchValue}%' LIMIT ${limit} OFFSET ${offset}`, (err, result, fields) => {
-      if (!err) {
-        callback(result)
-      } else {
-        callback(err)
-      }
+  getAllProjectModul: (searchKey, searchValue, limit, offset) => {
+    return new Promise((resolve, reject) => {
+      db.query(`SELECT * FROM project WHERE ${searchKey} LIKE '%${searchValue}%' LIMIT ${limit} OFFSET ${offset}`, (err, result, fields) => {
+        if (!err) {
+          resolve(result)
+        } else {
+          reject(new Error(err))
+        }
+      })
     })
   },
   getProjectByIdModul: (projectId) => {
@@ -38,13 +45,6 @@ module.exports = {
       db.query(`SELECT * FROM project WHERE project_id = ${projectId}`, (err, result, _fields) => {
         if (!err) {
           resolve(result)
-          db.query(`DELETE FROM project WHERE project_id = ${projectId}`, (err, result, _fields) => {
-            if (!err) {
-              callback(result)
-            } else {
-              callback(err)
-            }
-          })
         } else {
           reject(new Error(err))
         }
@@ -69,18 +69,29 @@ module.exports = {
       })
     })
   },
-  parsialUpdateProjectModul: (projectId, projectName, projectDesc, projectType, dataColumn, callback) => {
+  parsialUpdateProjectModul: (projectId) => {
     return new Promise((resolve, reject) => {
       db.query(`SELECT * FROM project WHERE project_id = ${projectId}`, (err, result, _fields) => {
         if (!err) {
           resolve(result)
-          db.query(`UPDATE project SET ${dataColumn} WHERE project_id = ${projectId}`, (err, result, _fields) => {
-            if (!err) {
-              callback(result)
-            } else {
-              callback(err)
-            }
-          })
+          // db.query(`UPDATE project SET ${dataColumn} WHERE project_id = ${projectId}`, (err, result, _fields) => {
+          //   if (!err) {
+          //     callback(result)
+          //   } else {
+          //     callback(err)
+          //   }
+          // })
+        } else {
+          reject(new Error(err))
+        }
+      })
+    })
+  },
+  parsialUpdateProjectModul2: (projectId, dataColumn) => {
+    return new Promise((resolve, reject) => {
+      db.query(`UPDATE project SET ${dataColumn} WHERE project_id = ${projectId}`, (err, result, _fields) => {
+        if (!err) {
+          resolve(result)
         } else {
           reject(new Error(err))
         }

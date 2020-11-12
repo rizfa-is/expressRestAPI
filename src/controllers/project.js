@@ -1,34 +1,38 @@
-const { getAllProjectModul, getProjectByIdModul, createProjectModul, deleteProjectModul, updateProjectModul, parsialUpdateProjectModul } = require('../models/project')
+const { getAllProjectModul, getProjectByIdModul, createProjectModul, deleteProjectModul, updateProjectModul, parsialUpdateProjectModul, parsialUpdateProjectModul2 } = require('../models/project')
 
 module.exports = {
-  getAllProject: (req, res) => {
-    let { search, limit, page } = req.query
-    let searchKey = ''
-    let searchValue = ''
+  getAllProject: async (req, res) => {
+    try {
+      let { search, limit, page } = req.query
+      let searchKey = ''
+      let searchValue = ''
 
-    if (typeof search === 'object') {
-      searchKey = Object.keys(search)[0]
-      searchValue = Object.values(search)[0]
-    } else {
-      searchKey = 'projectName'
-      searchValue = search || ''
-    }
+      if (typeof search === 'object') {
+        searchKey = Object.keys(search)[0]
+        searchValue = Object.values(search)[0]
+      } else {
+        const variabel = ['projectName', 'projectDesc', 'projectType']
+        for (let i = 0; i < variabel.length; i++) {
+          searchKey = variabel[i]
+        }
+        searchValue = search || ''
+      }
 
-    if (!limit) {
-      limit = 50
-    } else {
-      limit = parseInt(limit)
-    }
+      if (!limit) {
+        limit = 50
+      } else {
+        limit = parseInt(limit)
+      }
 
-    if (!page) {
-      page = 1
-    } else {
-      page = parseInt(page)
-    }
+      if (!page) {
+        page = 1
+      } else {
+        page = parseInt(page)
+      }
 
-    const offset = (page - 1) * limit
+      const offset = (page - 1) * limit
 
-    getAllProjectModul(searchKey, searchValue, limit, offset, result => {
+      const result = await getAllProjectModul(searchKey, searchValue, limit, offset)
       if (result.length) {
         res.status(200).send({
           success: true,
@@ -41,7 +45,12 @@ module.exports = {
           message: 'Item project not found!'
         })
       }
-    })
+    } catch (err) {
+      res.status(500).send({
+        success: false,
+        message: 'Internal Server Error!'
+      })
+    }
   },
   getProjectById: async (req, res) => {
     try {
@@ -95,8 +104,10 @@ module.exports = {
     try {
       const { projectId } = req.params
 
-      const result = await deleteProjectModul(projectId, result => {
-        if (result.affectedRows) {
+      const result = await getAllProjectModul(projectId)
+      if (result.length) {
+        const result2 = await deleteProjectModul(projectId)
+        if (result2.affectedRows) {
           res.status(200).send({
             success: true,
             message: `Item project id ${projectId} has been deleted!`
@@ -107,10 +118,6 @@ module.exports = {
             message: 'Item project failed to delete!'
           })
         }
-      })
-
-      if (result.length) {
-        // passed
       } else {
         res.status(404).send({
           success: false,
@@ -174,9 +181,13 @@ module.exports = {
           const queryDynamic = parseInt(item[1]) > 0 ? `${item[0] = item[1]}` : `${item[0]} = '${item[1]}'`
           return queryDynamic
         })
+        // console.log(dataColumn)
+        const result = await parsialUpdateProjectModul(projectId)
 
-        const result = await parsialUpdateProjectModul(projectId, projectName, projectDesc, projectType, dataColumn, result => {
-          if (result.affectedRows) {
+        if (result.length) {
+          const result2 = await parsialUpdateProjectModul2(projectId, dataColumn)
+
+          if (result2.affectedRows) {
             res.status(200).send({
               success: true,
               message: `Project with id ${projectId} has been updated`
@@ -187,10 +198,6 @@ module.exports = {
               message: 'Failed to update data project'
             })
           }
-        })
-
-        if (result.length) {
-          // passed
         } else {
           res.status(404).send({
             success: false,

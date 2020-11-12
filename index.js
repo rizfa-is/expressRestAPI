@@ -1,16 +1,16 @@
-const express = require('express')
-const db = require('./src/helpers/db')
-const bodyParser = require('body-parser')
-const app = express()
-const port = process.env.PORT
-const projectRouter = require('./src/routers/project')
 require('dotenv').config()
+const express = require('express')
+const app = express()
+const bodyParser = require('body-parser')
+const projectRouter = require('./src/routers/project')
+
+const port = process.env.PORT
 
 // Middleware
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use('/project', projectRouter)
 
-app.get('/', (_req, res) => {
+app.get('/', (req, res) => {
   res.send('Backend Android2!')
 })
 
